@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: synergy_agro_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgres://saf_user:saf_secure_pass_2026@postgres:5432/synergy_agro_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    # PostgreSQL 18 (or 17-alpine fallback)
+    image: postgres:18-bookworm
+    container_name: saf_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: saf_user
+      POSTGRES_PASSWORD: saf_secure_pass_2026
+      POSTGRES_DB: synergy_agro_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - saf_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saf_user -d synergy_agro_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  saf_pgdata:
+    driver: local

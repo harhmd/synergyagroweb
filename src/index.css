@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    background-color: #faf7f2;
+    color: #1f2937;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(22, 101, 52, 0.08);
+  }
+
+  .glass-card-dark {
+    background: rgba(5, 46, 22, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-card-coffee {
+    background: rgba(44, 22, 10, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(203, 155, 100, 0.2);
+  }
+
+  .text-gradient-agro {
+    background: linear-gradient(135deg, #15803d 0%, #22c55e 50%, #166534 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-coffee {
+    background: linear-gradient(135deg, #cb9b64 0%, #be7e3c 50%, #ecdec5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .agro-glow {
+    box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.35);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1ede4;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #15803d;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #166534;
+}

@@ -7,9 +7,10 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Install all dependencies (including devDependencies needed for build)
+ENV NODE_ENV=development
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Copy application source and build frontend
 COPY . .

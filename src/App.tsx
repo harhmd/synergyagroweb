@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
 import { CartProvider } from './context/CartContext';
 import { Navbar } from './components/Navbar';
@@ -15,21 +15,101 @@ import { FloatingActions } from './components/FloatingActions';
 import { CartDrawer } from './components/CartDrawer';
 import { VisitPlannerModal } from './components/VisitPlannerModal';
 import { GalleryModal } from './components/GalleryModal';
+import { LoginModal } from './components/LoginModal';
+import { EmbeddedPortal } from './components/EmbeddedPortal';
 
 const AppContent: React.FC = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [view, setView] = useState<'home' | 'portal'>('home');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('saf_portal_authenticated') === 'true';
+  });
+
+  // Handle URL query ?view=portal or path /portal on initial mount and popstate
+  useEffect(() => {
+    const checkUrlView = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const isPortalParam = searchParams.get('view') === 'portal';
+      const isPortalPath = window.location.pathname.startsWith('/portal');
+
+      if (isPortalParam || isPortalPath) {
+        if (localStorage.getItem('saf_portal_authenticated') === 'true') {
+          setView('portal');
+          setIsAuthenticated(true);
+        } else {
+          setIsLoginOpen(true);
+          setView('home');
+        }
+      } else {
+        setView('home');
+      }
+    };
+
+    checkUrlView();
+    window.addEventListener('popstate', checkUrlView);
+    return () => window.removeEventListener('popstate', checkUrlView);
+  }, []);
 
   const handleOpenGallery = (idx: number) => {
     setGalleryIndex(idx);
     setGalleryOpen(true);
   };
 
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    setIsLoginOpen(false);
+    setView('portal');
+    window.history.pushState({ view: 'portal' }, '', '/?view=portal');
+  };
+
+  const handleBackToHome = () => {
+    setView('home');
+    window.history.pushState({ view: 'home' }, '', '/');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('saf_portal_authenticated');
+    localStorage.removeItem('saf_portal_user');
+    localStorage.removeItem('saf_portal_login_time');
+    setIsAuthenticated(false);
+    setView('home');
+    window.history.pushState({ view: 'home' }, '', '/');
+  };
+
+  const handleOpenPortalFromNav = () => {
+    setView('portal');
+    window.history.pushState({ view: 'portal' }, '', '/?view=portal');
+  };
+
+  // If user is viewing the embedded management portal
+  if (view === 'portal') {
+    return (
+      <>
+        <EmbeddedPortal 
+          onBackToHome={handleBackToHome} 
+          onLogout={handleLogout} 
+        />
+        <LoginModal 
+          isOpen={isLoginOpen}
+          onClose={() => setIsLoginOpen(false)}
+          onSuccess={handleLoginSuccess}
+        />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#faf8f5]">
       {/* Top Navbar */}
-      <Navbar onOpenBooking={() => setIsBookingOpen(true)} />
+      <Navbar 
+        onOpenBooking={() => setIsBookingOpen(true)}
+        onOpenLogin={() => setIsLoginOpen(true)}
+        isAuthenticated={isAuthenticated}
+        onOpenPortal={handleOpenPortalFromNav}
+      />
 
       {/* Main Page Flow */}
       <main className="flex-grow">
@@ -92,6 +172,13 @@ const AppContent: React.FC = () => {
       <VisitPlannerModal 
         isOpen={isBookingOpen} 
         onClose={() => setIsBookingOpen(false)} 
+      />
+
+      {/* Staff & Admin Login Modal */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onSuccess={handleLoginSuccess}
       />
 
       {/* Lightbox Gallery Modal */}

@@ -10,16 +10,27 @@ import {
   Globe, 
   CalendarDays,
   PhoneCall,
-  Crown
+  Crown,
+  Lock,
+  ShieldCheck,
+  LogIn
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   onOpenBooking: () => void;
+  onOpenLogin: () => void;
+  isAuthenticated: boolean;
+  onOpenPortal: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenBooking }) => {
+export const Navbar: React.FC<NavbarProps> = ({ 
+  onOpenBooking, 
+  onOpenLogin, 
+  isAuthenticated, 
+  onOpenPortal 
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalCount, setIsCartOpen } = useCart();
@@ -146,6 +157,28 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBooking }) => {
 
           {/* Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
+            {/* Staff / Management Portal Trigger */}
+            {isAuthenticated ? (
+              <button
+                onClick={onOpenPortal}
+                className="flex items-center gap-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 font-bold text-xs xl:text-sm px-3.5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95"
+                title="Open Management Portal"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                <span>{t('Staff Portal', 'Portal Staf')}</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              </button>
+            ) : (
+              <button
+                onClick={onOpenLogin}
+                className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 font-bold text-xs xl:text-sm px-3.5 py-2.5 rounded-xl transition-all active:scale-95"
+                title="Staff & Management Login"
+              >
+                <Lock className="w-3.5 h-3.5 text-agro-700" />
+                <span>{t('Staff Login', 'Log Masuk Staf')}</span>
+              </button>
+            )}
+
             {/* Cart Trigger */}
             <button
               onClick={() => setIsCartOpen(true)}
@@ -220,6 +253,32 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBooking }) => {
                   <CalendarDays className="w-4 h-4" />
                   <span>{t('Plan Farm Visit & Buggy Tour', 'Rancang Lawatan & Buggy')}</span>
                 </button>
+                {/* Mobile Staff Login / Portal Button */}
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenPortal();
+                    }}
+                    className="w-full py-2.5 bg-emerald-100 text-emerald-950 font-bold rounded-xl flex items-center justify-center gap-2 text-sm border border-emerald-300"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    <span>{t('Open Management Portal (demo)', 'Buka Portal Pengurusan (demo)')}</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenLogin();
+                    }}
+                    className="w-full py-2.5 bg-slate-100 text-slate-800 hover:bg-slate-200 font-bold rounded-xl flex items-center justify-center gap-2 text-sm border border-slate-200"
+                  >
+                    <Lock className="w-4 h-4 text-agro-700" />
+                    <span>{t('Staff & Management Login (demo)', 'Log Masuk Staf & Pengurusan')}</span>
+                  </button>
+                )}
+
                 <a
                   href="https://wa.me/60184633326"
                   target="_blank"

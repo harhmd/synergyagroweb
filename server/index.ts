@@ -7,6 +7,8 @@ import dotenv from 'dotenv';
 import { pool, query } from './db.js';
 import { initializeDatabase } from './initDb.js';
 
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,9 +16,92 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PORTAL_URL = process.env.PORTAL_URL || 'http://65.75.201.219:5000';
 
 app.use(cors());
+
+// -------------------------------------------------------------
+// Reverse Proxy to Embedded Portal (http://65.75.201.219:5000)
+// Ensures portal is embedded cleanly under https://synergy.famamelaka.cc
+// -------------------------------------------------------------
+const portalProxy = createProxyMiddleware({
+  target: PORTAL_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/portal': '',
+  },
+  on: {
+    proxyReq: fixRequestBody,
+    error: (err, _req, res) => {
+      console.error('[Portal Proxy Error]', err.message);
+      if ('writeHead' in res && !res.headersSent) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Portal backend currently unavailable', details: err.message }));
+      }
+    },
+  },
+});
+
+const portalApiProxy = createProxyMiddleware({
+  target: PORTAL_URL,
+  changeOrigin: true,
+  on: {
+    proxyReq: fixRequestBody,
+    error: (err, _req, res) => {
+      console.error('[Portal API Proxy Error]', err.message);
+      if ('writeHead' in res && !res.headersSent) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Portal API currently unavailable', details: err.message }));
+      }
+    },
+  },
+});
+
+// Trailing slash redirect for proper relative asset loading (styles.css, app.js)
+app.get('/portal', (_req, res) => {
+  res.redirect(301, '/portal/');
+});
+
+app.use('/portal', portalProxy);
+
+// Forward management portal API routes to port 5000
+app.use([
+  '/api/items',
+  '/api/audit-logs',
+  '/api/order-requests',
+  '/api/analytics',
+  '/api/status',
+  '/api/sync',
+  '/api/cart',
+  '/api/export',
+], portalApiProxy);
+
+// Forward portal specific order operations to port 5000 (GET /api/orders and POST /api/orders/receive)
+app.use('/api/orders', (req, res, next) => {
+  if (req.method === 'GET' || req.path === '/receive') {
+    return (portalApiProxy as any)(req, res, next);
+  }
+  next();
+});
+
+// Body parser for remaining SAF native API routes
 app.use(express.json());
+
+// -------------------------------------------------------------
+// Authentication Endpoint (username: demo, password: demo)
+// -------------------------------------------------------------
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === 'demo' && password === 'demo') {
+    return res.json({
+      success: true,
+      user: { username: 'demo', role: 'Administrator', name: 'Demo Manager' },
+      portalUrl: '/portal/',
+      token: 'demo-session-token-' + Date.now(),
+    });
+  }
+  return res.status(401).json({ success: false, error: 'Invalid username or password' });
+});
 
 // Auto-run schema & media initialization on startup if DATABASE_URL is reachable
 (async () => {

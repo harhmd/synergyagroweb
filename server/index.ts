@@ -53,7 +53,12 @@ const portalApiProxy = createProxyMiddleware({
   target: PORTAL_URL,
   changeOrigin: true,
   on: {
-    proxyReq: fixRequestBody,
+    proxyReq: (proxyReq, req: any) => {
+      if (req.originalUrl) {
+        proxyReq.path = req.originalUrl;
+      }
+      fixRequestBody(proxyReq, req);
+    },
     error: (err, _req, res) => {
       console.error('[Portal API Proxy Error]', err.message);
       if ('writeHead' in res && !res.headersSent) {

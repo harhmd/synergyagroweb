@@ -24,12 +24,17 @@ app.use(cors());
 // Reverse Proxy to Embedded Portal (http://65.75.201.219:5000)
 // Ensures portal is embedded cleanly under https://synergy.famamelaka.cc
 // -------------------------------------------------------------
+// Trailing slash redirect for exact /portal so relative assets (styles.css, app.js) resolve correctly
+app.use((req, res, next) => {
+  if (req.originalUrl === '/portal') {
+    return res.redirect(301, '/portal/');
+  }
+  next();
+});
+
 const portalProxy = createProxyMiddleware({
   target: PORTAL_URL,
   changeOrigin: true,
-  pathRewrite: {
-    '^/portal': '',
-  },
   on: {
     proxyReq: fixRequestBody,
     error: (err, _req, res) => {
@@ -41,6 +46,8 @@ const portalProxy = createProxyMiddleware({
     },
   },
 });
+
+app.use('/portal', portalProxy);
 
 const portalApiProxy = createProxyMiddleware({
   target: PORTAL_URL,
@@ -56,13 +63,6 @@ const portalApiProxy = createProxyMiddleware({
     },
   },
 });
-
-// Trailing slash redirect for proper relative asset loading (styles.css, app.js)
-app.get('/portal', (_req, res) => {
-  res.redirect(301, '/portal/');
-});
-
-app.use('/portal', portalProxy);
 
 // Forward management portal API routes to port 5000
 app.use([

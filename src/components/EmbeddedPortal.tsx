@@ -72,7 +72,7 @@ export const EmbeddedPortal: React.FC<EmbeddedPortalProps> = ({ onBackToHome, on
                   SYNERGY AGRO FARM
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-700/60 hidden md:inline-block">
-                  Donezo Portal
+                  Admin Portal
                 </span>
               </div>
             </div>
@@ -82,7 +82,7 @@ export const EmbeddedPortal: React.FC<EmbeddedPortalProps> = ({ onBackToHome, on
           <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-700/40 text-[11px] text-emerald-300">
             <Lock className="w-3 h-3 text-emerald-400" />
             <span>Embedded:</span>
-            <span className="font-mono font-bold text-white">synergy.famamelaka.cc/portal/</span>
+            <span className="font-mono font-bold text-white">synergy.famamelaka.cc/admin</span>
           </div>
         </div>
 
@@ -115,7 +115,7 @@ export const EmbeddedPortal: React.FC<EmbeddedPortalProps> = ({ onBackToHome, on
 
           {/* Direct Link in New Tab */}
           <a
-            href="/portal/"
+            href="/admin"
             target="_blank"
             rel="noreferrer"
             className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors hidden sm:block"
@@ -146,10 +146,10 @@ export const EmbeddedPortal: React.FC<EmbeddedPortalProps> = ({ onBackToHome, on
             </div>
             <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mb-2" />
             <p className="text-sm font-bold text-white tracking-wide">
-              {t('Connecting to SAF Management Portal...', 'Menyambung ke Portal Pengurusan SAF...')}
+              {t('Connecting to SAF Admin Portal...', 'Menyambung ke Portal Admin SAF...')}
             </p>
             <p className="text-xs text-slate-400 mt-1 font-mono">
-              synergy.famamelaka.cc/portal/ • Donezo POS & Inventory
+              synergy.famamelaka.cc/admin • Donezo POS & Inventory
             </p>
           </div>
         )}
@@ -157,10 +157,10 @@ export const EmbeddedPortal: React.FC<EmbeddedPortalProps> = ({ onBackToHome, on
         {/* Embedded Iframe */}
         <iframe
           ref={iframeRef}
-          src="/portal/"
+          src="/admin"
           onLoad={() => setIsLoading(false)}
           className="w-full h-full border-0"
-          title="Synergy Agro Farm Management Portal"
+          title="Synergy Agro Farm Admin Portal"
           allow="clipboard-write; fullscreen"
         />
       </div>

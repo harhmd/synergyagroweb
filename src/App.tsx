@@ -28,12 +28,12 @@ const AppContent: React.FC = () => {
     return localStorage.getItem('saf_portal_authenticated') === 'true';
   });
 
-  // Handle URL query ?view=portal or path /portal on initial mount and popstate
+  // Handle URL query ?view=admin / ?view=portal or paths /admin, /portal on initial mount and popstate
   useEffect(() => {
     const checkUrlView = () => {
       const searchParams = new URLSearchParams(window.location.search);
-      const isPortalParam = searchParams.get('view') === 'portal';
-      const isPortalPath = window.location.pathname.startsWith('/portal');
+      const isPortalParam = searchParams.get('view') === 'portal' || searchParams.get('view') === 'admin';
+      const isPortalPath = window.location.pathname.startsWith('/portal') || window.location.pathname.startsWith('/admin');
 
       if (isPortalParam || isPortalPath) {
         if (localStorage.getItem('saf_portal_authenticated') === 'true') {
@@ -62,7 +62,8 @@ const AppContent: React.FC = () => {
     setIsAuthenticated(true);
     setIsLoginOpen(false);
     setView('portal');
-    window.history.pushState({ view: 'portal' }, '', '/?view=portal');
+    const isPathAdmin = window.location.pathname.startsWith('/admin');
+    window.history.pushState({ view: 'portal' }, '', isPathAdmin ? '/admin' : '/?view=admin');
   };
 
   const handleBackToHome = () => {

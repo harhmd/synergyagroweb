@@ -157,25 +157,25 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
-            {/* Staff / Management Portal Trigger */}
+            {/* Admin / Staff Portal Trigger */}
             {isAuthenticated ? (
               <button
                 onClick={onOpenPortal}
                 className="flex items-center gap-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 font-bold text-xs xl:text-sm px-3.5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95"
-                title="Open Management Portal"
+                title="Open Admin Management Portal"
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                <span>{t('Staff Portal', 'Portal Staf')}</span>
+                <span>{t('Admin Portal', 'Portal Admin')}</span>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               </button>
             ) : (
               <button
                 onClick={onOpenLogin}
                 className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 font-bold text-xs xl:text-sm px-3.5 py-2.5 rounded-xl transition-all active:scale-95"
-                title="Staff & Management Login"
+                title="Admin & Staff Login (demo/demo)"
               >
                 <Lock className="w-3.5 h-3.5 text-agro-700" />
-                <span>{t('Staff Login', 'Log Masuk Staf')}</span>
+                <span>{t('Admin Login', 'Log Masuk Admin')}</span>
               </button>
             )}
 
@@ -275,7 +275,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="w-full py-2.5 bg-slate-100 text-slate-800 hover:bg-slate-200 font-bold rounded-xl flex items-center justify-center gap-2 text-sm border border-slate-200"
                   >
                     <Lock className="w-4 h-4 text-agro-700" />
-                    <span>{t('Staff & Management Login (demo)', 'Log Masuk Staf & Pengurusan')}</span>
+                    <span>{t('Admin & Staff Login (demo)', 'Log Masuk Admin & Staf (demo)')}</span>
                   </button>
                 )}
 

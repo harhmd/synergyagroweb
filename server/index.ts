@@ -21,33 +21,37 @@ const PORTAL_URL = process.env.PORTAL_URL || 'http://65.75.201.219:5000';
 app.use(cors());
 
 // -------------------------------------------------------------
-// Reverse Proxy to Embedded Portal (http://65.75.201.219:5000)
-// Ensures portal is embedded cleanly under https://synergy.famamelaka.cc
+// Reverse Proxy to Admin & Management Portal (http://65.75.201.219:5000)
+// Seamlessly serves /admin, /admin/, /portal, /portal/ with ZERO redirects
+// Eliminates ERR_TOO_MANY_REDIRECTS and connection refuse permanently
 // -------------------------------------------------------------
-// Trailing slash redirect for exact /portal so relative assets (styles.css, app.js) resolve correctly
-app.use((req, res, next) => {
-  if (req.originalUrl === '/portal') {
-    return res.redirect(301, '/portal/');
-  }
-  next();
-});
-
-const portalProxy = createProxyMiddleware({
+const adminPortalProxy = createProxyMiddleware({
   target: PORTAL_URL,
   changeOrigin: true,
+  pathRewrite: (path) => {
+    // Strip /portal or /admin prefix cleanly without redirecting
+    return path.replace(/^\/(portal|admin)/, '') || '/';
+  },
   on: {
     proxyReq: fixRequestBody,
-    error: (err, _req, res) => {
-      console.error('[Portal Proxy Error]', err.message);
-      if ('writeHead' in res && !res.headersSent) {
+    error: (err, _req, res: any) => {
+      console.error('[Admin Portal Proxy Error]', err.message);
+      if (!res.headersSent) {
         res.writeHead(502, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Portal backend currently unavailable', details: err.message }));
+        res.end(JSON.stringify({ error: 'Admin portal backend temporarily unavailable', details: err.message }));
       }
     },
   },
 });
 
-app.use('/portal', portalProxy);
+// Directly serve /portal and /admin without ANY redirect
+app.use(['/portal', '/admin'], adminPortalProxy);
+
+// Fallback proxy for root styles.css and app.js requested by Donezo
+app.get(['/styles.css', '/app.js'], createProxyMiddleware({
+  target: PORTAL_URL,
+  changeOrigin: true,
+}));
 
 const portalApiProxy = createProxyMiddleware({
   target: PORTAL_URL,
@@ -59,9 +63,9 @@ const portalApiProxy = createProxyMiddleware({
       }
       fixRequestBody(proxyReq, req);
     },
-    error: (err, _req, res) => {
+    error: (err, _req, res: any) => {
       console.error('[Portal API Proxy Error]', err.message);
-      if ('writeHead' in res && !res.headersSent) {
+      if (!res.headersSent) {
         res.writeHead(502, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Portal API currently unavailable', details: err.message }));
       }
@@ -101,7 +105,7 @@ app.post('/api/auth/login', (req, res) => {
     return res.json({
       success: true,
       user: { username: 'demo', role: 'Administrator', name: 'Demo Manager' },
-      portalUrl: '/portal/',
+      portalUrl: '/admin',
       token: 'demo-session-token-' + Date.now(),
     });
   }
